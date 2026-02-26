@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZZ ARCHIVE | 纪念档案：周秩 (1978-2022)</title>
+    <style>
+        :root {
+            /* 核心色板 */
+            --cad-blue: #0000FF; /* 纯正的CAD蓝 */
+            --paper-gray: #F5F5F5;
+            --ink-black: #000000;
+            --grid-line: #E0E0E0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: crosshair; /* 鼠标变为十字准星，模拟CAD操作 */
+        }
+
+        body {
+            background-color: var(--paper-gray);
+            color: var(--ink-black);
+            font-family: 'Courier New', Courier, monospace; /* 强制等宽字体 */
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* --- 辅助类 --- */
+        .blue { color: var(--cad-blue); }
+        .bg-blue { background-color: var(--cad-blue); color: white; }
+        .border-b { border-bottom: 1px solid var(--cad-blue); }
+        .border-r { border-right: 1px solid var(--cad-blue); }
+        .border-all { border: 1px solid var(--cad-blue); }
+        .mono-bold { font-weight: 700; letter-spacing: -0.5px; }
+        .uppercase { text-transform: uppercase; }
+        
+        /* --- 布局网格系统 --- */
+        .wrapper {
+            max-width: 1440px;
+            margin: 0 auto;
+            border-left: 1px solid var(--cad-blue);
+            border-right: 1px solid var(--cad-blue);
+            min-height: 100vh;
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 50px 50px; /* 50px标准网格 */
+            background-color: #FAFAFA;
+        }
+
+        /* --- 顶部仪表盘 --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #FAFAFA;
+            border-bottom: 2px solid var(--cad-blue);
+            display: grid;
+            grid-template-columns: 250px 1fr 200px;
+        }
+
+        .header-cell {
+            padding: 15px;
+            border-right: 1px solid var(--cad-blue);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .status-box {
+            border: 1px solid var(--ink-black);
+            padding: 2px 5px;
+            font-size: 10px;
+            display: inline-block;
+            margin-top: 5px;
+            background: #fff;
+        }
+
+        /* --- 进度条 (永远卡在99.9%) --- */
+        .loading-bar-container {
+            width: 100%;
+            height: 6px;
+            border-bottom: 1px solid var(--cad-blue);
+            background: #FFF;
+        }
+        .loading-bar {
+            width: 99.9%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--cad-blue),
+                var(--cad-blue) 10px,
+                #FAFAFA 10px,
+                #FAFAFA 20px
+            );
+        }
+
+        /* --- 导航索引 --- */
+        nav {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            border-bottom: 1px solid var(--cad-blue);
+            background: #fff;
+        }
+        nav a {
+            text-decoration: none;
+            color: var(--ink-black);
+            padding: 15px;
+            border-right: 1px solid var(--cad-blue);
+            font-size: 12px;
+            transition: all 0s;
+            display: block;
+        }
+        nav a:hover {
+            background: var(--cad-blue);
+            color: white;
+        }
+
+        /* --- 内容区块通用样式 --- */
+        section {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            border-bottom: 1px solid var(--cad-blue);
+        }
+        
+        .sidebar {
+            padding: 20px;
+            border-right: 1px solid var(--cad-blue);
+            background: rgba(255,255,255,0.8);
+        }
+        .main-content {
+            padding: 30px;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .section-header {
+            grid-column: 1 / -1;
+            background: var(--cad-blue);
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- 表格样式 --- */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        td, th { 
+            text-align: left; 
+            padding: 8px; 
+            border-bottom: 1px solid #CCC; 
+            vertical-align: top;
+        }
+        th { color: var(--cad-blue); width: 140px; }
+
+        /* --- 作品展示 (CAD图框风格) --- */
+        .work-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .cad-frame {
+            border: 1px solid var(--cad-blue);
+            background: #fff;
+            position: relative;
+            padding: 10px;
+            padding-bottom: 40px; /* 留出底部数据栏空间 */
+        }
+        
+        /* 模拟图片占位符 - 轴测图风格 */
+        .placeholder-img {
+            width: 100%;
+            height: 250px;
+            background-color: #EFEFEF;
+            border: 1px dashed var(--cad-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 装饰性线条 */
+        .crosshair {
+            position: absolute;
+            width: 100%; height: 1px; background: var(--cad-blue); top: 50%;
+        }
+        .crosshair::after {
+            content: ''; position: absolute; height: 250px; width: 1px; 
+            background: var(--cad-blue); left: 50%; top: -125px;
+        }
+
+        .meta-tag {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: var(--ink-black);
+            color: white;
+            padding: 5px 10px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- 语录框 --- */
+        .quote-block {
+            border: 1px solid var(--ink-black);
+            padding: 15px;
+            margin-top: 20px;
+            position: relative;
+        }
+        .quote-block::before {
+            content: "QUOTE // DATA";
+            position: absolute;
+            top: -10px; left: 10px;
+            background: #FAFAFA;
+            padding: 0 5px;
+            color: var(--cad-blue);
+            font-size: 10px;
+        }
+
+        /* --- 报告单样式 --- */
+        .report-sheet {
+            border: 2px solid var(--ink-black);
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #FFF;
+            box-shadow: 5px 5px 0px rgba(0,0,255,0.1);
+        }
+
+        footer {
+            padding: 50px;
+            text-align: center;
+            border-top: 1px solid var(--cad-blue);
+            background: #000;
+            color: #fff;
+        }
+
+        /* --- 响应式 --- */
+        @media (max-width: 768px) {
+            section, header { grid-template-columns: 1fr; }
+            nav { grid-template-columns: 1fr 1fr; }
+            .sidebar { border-right: none; border-bottom: 1px solid var(--cad-blue); }
+            .header-cell:nth-child(2) { display: none; } /* 移动端隐藏中间部分 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- SYSTEM HEADER -->
+    <header>
+        <div class="header-cell">
+            <h1 style="font-size: 18px; margin-bottom: 5px;">ZZ_ARCHIVE</h1>
+            <span class="blue" style="font-size: 10px;">THE ZHOU ZHI ESTATE</span>
+        </div>
+        <div class="header-cell" style="align-items: center; justify-content: center; text-align: center;">
+            <div style="font-size: 24px; letter-spacing: 2px; font-weight: bold;">周 秩</div>
+            <div style="font-size: 11px;">1978 — 2022 [SHANGHAI]</div>
+            <div class="status-box">STATUS: DEREGISTERED / 注销</div>
+        </div>
+        <div class="header-cell" style="text-align: right; border-right: none;">
+            <div id="sys-clock">00:00:00.000</div>
+            <div class="blue" style="font-size: 10px; margin-top: 5px;">SYS: STANDBY</div>
+            <div style="font-size: 10px;">VISUAL SYSTEM LAB</div>
+        </div>
+    </header>
+
+    <!-- LOADING STRIP -->
+    <div class="loading-bar-container">
+        <div class="loading-bar"></div>
+    </div>
+    <div style="text-align: right; font-size: 9px; padding: 2px 10px; color: var(--cad-blue); border-bottom: 1px solid var(--cad-blue);">
+        LOADING RESOURCE... 99.9% [CONNECTION_TIMEOUT]
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav>
+        <a href="#profile">01_档案 (PROFILE)</a>
+        <a href="#works">02_交付物 (WORKS)</a>
+        <a href="#history">03_履历 (LOGS)</a>
+        <a href="#pubs">04_出版 (PUBS)</a>
+        <a href="#end">05_终点 (END)</a>
+    </nav>
+
+    <!-- SECTION 1: PROFILE -->
+    <section id="profile">
+        <div class="section-header">
+            <span>01 // 艺术家基本信息</span>
+            <span>ID: ZZ-1978-SH</span>
+        </div>
+        <div class="sidebar">
+            <!-- 证件照位置 -->
+            <img src="images/profile-img.png" alt="周秩" style="width: 100%; height: 200px; object-fit: cover; border: 1px solid #000;">
+            <div class="quote-block">
+                <p>“在这个时代，‘灵感’是效率的敌人。我从不创作，我只执行。”</p>
+            </div>
+            <div class="quote-block">
+                <p>“艺术家是生产链条上的一个生物学错误。”</p>
+            </div>
+        </div>
+        <div class="main-content">
+            <h2 class="blue uppercase" style="margin-bottom: 20px;">Identity Data / 身份数据</h2>
+            <table>
+                <tr><th>姓名</th><td>周秩 (Zhou Zhi)</td></tr>
+                <tr><th>生卒</th><td>1978 (上海) — 2022 (上海, 疫情期间)</td></tr>
+                <tr><th>死因</th><td>慢性心力衰竭与呼吸系统并发症</td></tr>
+                <tr><th>职业</th><td>摄影师、视觉系统研究者、前高级结构工程师</td></tr>
+                <tr><th>教育背景</th>
+                    <td>
+                        1996-2000 同济大学 建筑工程系<br>
+                        2005-2007 德国包豪斯大学 (访问研究：工业视觉与感知自动化)
+                    </td>
+                </tr>
+            </table>
+
+            <div style="border: 1px solid var(--cad-blue); padding: 15px; background: #f0f0ff;">
+                <strong class="blue">关于调研：</strong><br>
+                “工地是当代生命政治的缩影。在那里，没有个体，只有被网格化的劳动力。”
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: WORKS -->
+    <section id="works">
+        <div class="section-header">
+            <span>02 // 系统交付物 (VISUAL OUTPUTS)</span>
+            <span>DISPLAY: GRID_VIEW</span>
+        </div>
+
+        <!-- SERIES 1 -->
+        <div class="sidebar">
+            <h3 class="blue border-b" style="padding-bottom: 10px;">I. 轴测规训 (2015-2018)</h3>
+            <p style="font-size: 11px; margin-top: 10px;">
+                Axonometric Discipline<br><br>
+                <strong>技术描述：</strong><br> 采用极高像素的数字背板拍摄建筑工地局部。图像取消了所有的透视消失点，呈现出一种绝对理性的平行结构。<br><br>
+                <strong>学术话术：</strong><br>“通过对透视法的暴力纠正，周秩剥离了观众作为‘主体’的优越感，将建筑景观还原为一种纯粹的权力矩阵”
+            </p>
+        </div>
+        <div class="main-content">
+            <div class="work-grid">
+                <!-- Art Item 1 -->
+                <div class="cad-frame">
+                    <div class="placeholder-img">
+                        <img src="images/1.jpeg" alt="轴测规训1-预排列" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="meta-tag">
+                        <span>NO. AXON-01</span>
+                        <span>[预排列]</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 11px;">
+                        <strong>描述：</strong>材料与构件被提前组织为标准化单元，以平行逻辑铺展于空间之中。
+                    </div>
+                </div>
+
+                <!-- Art Item 2 -->
+                <div class="cad-frame">
+                    <div class="placeholder-img">
+                        <img src="images/2.jpeg" alt="轴测规训2-静默待命" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="meta-tag">
+                        <span>NO. AXON-02</span>
+                        <span>[静默待命]</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 11px;">
+                        <strong>描述：</strong>容器、钢筋与模块化组件被纳入同一管理平面。
+                    </div>
+                </div>
+
+                <!-- Art Item 3 -->
+                <div class="cad-frame">
+                    <div class="placeholder-img">
+                        <img src="images/3.png" alt="轴测规训3-操作层" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="meta-tag">
+                        <span>NO. AXON-03</span>
+                        <span>[操作层]</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 11px;">
+                        <strong>描述：</strong>机械与临时结构以无透视的方式并列出现，形成纯粹的功能分布。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SERIES 2 -->
+        <div class="sidebar" style="border-top: 1px solid var(--cad-blue);">
+            <h3 class="blue border-b" style="padding-bottom: 10px;">II. 交付物：0.00mm</h3>
+            <p style="font-size: 11px; margin-top: 10px;">
+                Deliverables (2019-2021)<br><br>
+                <strong>描述：</strong><br>拍摄工地遗留下来的废弃铁丝、干涸的混凝土碎块和打桩痕迹。每张照片都附带一份精密的《材料检测报告》。<br><br>
+                <strong>学术话术：</strong><br>"这是对劳动痕迹的法医式取证。周秩用镜头记录了那些'无名劳动'在被系统吞噬前的最后残余。"
+            </p>
+        </div>
+        <div class="main-content" style="border-top: 1px solid var(--cad-blue); background: #FAFAFA;">
+            <!-- Report 1 -->
+            <div class="report-sheet">
+                <div style="display: flex; justify-content: space-between; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong style="font-size: 16px;">材料检测报告 / MATERIAL REPORT</strong>
+                    <span class="blue">ID: ZZ-MR-19-01</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 100px 1fr; gap: 10px;">
+                    <img src="images/4.png" alt="样本图片" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #333;">
+                    <div>
+                        <p><strong>样本名称：</strong>退役钢制捆扎线残段</p>
+                        <p><strong>采集地点：</strong>施工场地外围弃置区</p>
+                        <p><strong>采集时间：</strong>2019.06.14</p>
+                        <p class="blue"><strong>状态：</strong>氧化 / 废弃</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report 2 -->
+            <div class="report-sheet">
+                <div style="display: flex; justify-content: space-between; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong style="font-size: 16px;">材料检测报告 / MATERIAL REPORT</strong>
+                    <span class="blue">ID: ZZ-MR-19-02</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 100px 1fr; gap: 10px;">
+                    <img src="images/5.png" alt="样本图片" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #333;">
+                    <div>
+                        <p><strong>样本名称：</strong>干涸混凝土碎块</p>
+                        <p><strong>采集地点：</strong>模板拆除区边缘</p>
+                        <p><strong>采集时间：</strong>2019.11.03</p>
+                        <p class="blue"><strong>状态：</strong>散落 / 无编号标识</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report 3 -->
+            <div class="report-sheet">
+                <div style="display: flex; justify-content: space-between; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong style="font-size: 16px;">材料检测报告 / MATERIAL REPORT</strong>
+                    <span class="blue">ID: ZZ-MR-20-01</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 100px 1fr; gap: 10px;">
+                    <img src="images/6.png" alt="样本图片" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #333;">
+                    <div>
+                        <p><strong>样本名称：</strong>打桩遗留环状压痕</p>
+                        <p><strong>采集地点：</strong>基坑边界</p>
+                        <p><strong>采集时间：</strong>2020.02.27</p>
+                        <p class="blue"><strong>状态：</strong>地表残留</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report 4 -->
+            <div class="report-sheet">
+                <div style="display: flex; justify-content: space-between; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong style="font-size: 16px;">材料检测报告 / MATERIAL REPORT</strong>
+                    <span class="blue">ID: ZZ-MR-20-02</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 100px 1fr; gap: 10px;">
+                    <img src="images/7.png" alt="样本图片" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #333;">
+                    <div>
+                        <p><strong>样本名称：</strong>施工手套（弃置），散落紧固件（金属）</p>
+                        <p><strong>采集地点：</strong>物料暂存区</p>
+                        <p><strong>采集时间：</strong>2020.09.18</p>
+                        <p class="blue"><strong>状态：</strong>干燥 / 失配</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report 5 -->
+            <div class="report-sheet">
+                <div style="display: flex; justify-content: space-between; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong style="font-size: 16px;">材料检测报告 / MATERIAL REPORT</strong>
+                    <span class="blue">ID: ZZ-MR-21-01</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 100px 1fr; gap: 10px;">
+                    <img src="images/8.png" alt="样本图片" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #333;">
+                    <div>
+                        <p><strong>样本名称：</strong>建筑废料（收集）</p>
+                        <p><strong>采集地点：</strong>施工运输路径</p>
+                        <p><strong>采集时间：</strong>2021.04.06</p>
+                        <p class="blue"><strong>状态：</strong>未分类</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report 6 -->
+            <div class="report-sheet">
+                <div style="display: flex; justify-content: space-between; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong style="font-size: 16px;">材料检测报告 / MATERIAL REPORT</strong>
+                    <span class="blue">ID: ZZ-MR-21-02</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 100px 1fr; gap: 10px;">
+                    <img src="images/9.png" alt="样本图片" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #333;">
+                    <div>
+                        <p><strong>样本名称：</strong>防护端帽（钢筋用）</p>
+                        <p><strong>采集地点：</strong>施工废弃区</p>
+                        <p><strong>采集时间：</strong>2021.12.11</p>
+                        <p class="blue"><strong>状态：</strong>成组堆叠</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SERIES 3 -->
+        <div class="sidebar" style="border-top: 1px solid var(--cad-blue);">
+            <h3 class="blue border-b" style="padding-bottom: 10px;">III. 静默期采样</h3>
+            <p style="font-size: 11px; margin-top: 10px;">
+                Silent Sampling (2022)<br>
+                <span style="background: black; color: white;">[ 未完成 / 遗作 ]</span><br><br>
+                <strong>描述：</strong><br>外部生产线停摆。测量仪转向生命本身。
+            </p>
+        </div>
+        <div class="main-content" style="border-top: 1px solid var(--cad-blue);">
+            <div class="work-grid">
+                <div class="cad-frame" style="border-color: #999;">
+                    <div class="placeholder-img" style="background: #FFF; border: none;">
+                        <div style="width: 100%; height: 1px; background: #EEE; box-shadow: 0 0 20px rgba(0,0,0,0.1);"></div>
+                        <span style="position: absolute; top: 10px; left: 10px; font-size: 9px; color: #CCC;">DUST PARTICLE ANALYSIS</span>
+                    </div>
+                    <div class="meta-tag" style="background: #999;">
+                        <span>SS-01</span>
+                        <span>空气浮尘</span>
+                    </div>
+                </div>
+                <div class="cad-frame" style="border-color: #999;">
+                    <div class="placeholder-img" style="background: #000; color: #333;">
+                        NO SIGNAL
+                    </div>
+                    <div class="meta-tag" style="background: #999;">
+                        <span>SS-08</span>
+                        <span>[系统注销]</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: LOGS -->
+    <section id="history">
+        <div class="section-header">
+            <span>03 // 历史记录 (SYSTEM LOGS)</span>
+            <span>TYPE: CHRONOLOGICAL</span>
+        </div>
+        <div class="sidebar">
+            <h4 class="blue">个人个展 (SOLO)</h4>
+            <ul style="list-style: none; font-size: 11px; margin-top: 10px; line-height: 2;">
+                <li><strong>2023</strong> | <span style="border: 1px solid black; padding: 0 2px;">遗作展</span> 《周秩：系统不在场》(Zhou Zhi: System Absence), 龙美术馆, 上海</li>
+                <li><strong>2021</strong> | 《闭环实验：注销前的最后采样》(Closed Loop), 线上虚拟美术馆项目(Project V-Void)</li>
+                <li><strong>2019</strong> | 《系统交付：2010-2019回顾展》(Final Deliverables), 上海当代艺术博物馆(PSA), 上海</li>
+                <li><strong>2018</strong> | 《标准化身体》(The Standardized Body), 录像局(Video Bureau), 广州</li>
+                <li><strong>2016</strong> | 《非地方的精密扫描》(Scanning Non-places), Whitechapel Gallery, 伦敦</li>
+                <li><strong>2014</strong> | 《轴测规训：从工地到影像》(Axonometric Discipline), 东京都摄影美术馆(TOP Museum), 东京</li>
+                <li><strong>2011</strong> | 《应力补偿》(Stress Compensation), M50创意园区, 上海</li>
+                <li><strong>2008</strong> | 《Weimar Samples: 0.1%误差》(Weimar Samples: 0.1% Margin of Error), Bauhaus-Archiv, 柏林</li>
+                <li><strong>2004</strong> | 《静载：关于水泥的本体论》(Static Load: Ontology of Cement), 泰康空间, 北京</li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <h4 class="blue">群展记录 (GROUP SAMPLES)</h4>
+            <p style="font-size: 10px; color: #666; margin-bottom: 10px;">[关联节点：谢德庆, Hito Steyerl...]</p>
+            <table>
+                <tr><th>2022</th><td>《全球景观：最后的打卡》, 威尼斯双年展主题馆, 意大利</td></tr>
+                <tr><th>2020</th><td>《隔离空间的度量学》, 柏林双年展, 德国</td></tr>
+                <tr><th>2017</th><td>《废墟上的算法：超现代性人类学》, 尤伦斯当代艺术中心 (UCCA), 北京</td></tr>
+                <tr><th>2015</th><td>《后人类：数字异化与生产力》, 纽约现代艺术博物馆 (MoMA), 纽约</td></tr>
+                <tr><th>2013</th><td>《第十届连州国际摄影年展：采样现实》, 连州, 中国</td></tr>
+                <tr><th>2012</th><td>《生命政治：规训下的像素》, 蓬皮杜艺术中心, 巴黎</td></tr>
+                <tr><th>2009</th><td>《可见的隐形劳动》, 泰特现代美术馆 (Tate Modern), 伦敦</td></tr>
+                <tr><th>2007</th><td>《跨界：建筑与影像的逻辑》, 威尼斯建筑双年展中国馆, 意大利</td></tr>
+                <tr><th>2005</th><td>《新客观主义的余响》, 杜塞尔多夫艺术学院, 德国</td></tr>
+            </table>
+
+            <div style="margin-top: 30px;">
+                <h4 class="blue">所获荣誉 (AWARDS)</h4>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                    <span style="border: 1px solid var(--cad-blue); padding: 5px; font-size: 11px;">Weimar 工业影像奖 (2006)</span>
+                    <span style="border: 1px solid var(--cad-blue); padding: 5px; font-size: 11px;">哈苏基金会：数字本体论年度资助 (2015)</span>
+                    <span style="border: 1px solid var(--cad-blue); padding: 5px; font-size: 11px;">上海国际摄影年展 年度最佳技术成就奖 (2018)</span>
+                    <span style="border: 1px solid var(--cad-blue); padding: 5px; font-size: 11px;">全球工业美学卓越奖 GAEA (2020)</span>
+                    <span style="border: 1px solid var(--cad-blue); padding: 5px; font-size: 11px;">平遥国际摄影大展 优秀工业题材摄影奖 (2012)</span>
+                    <span style="border: 1px solid var(--cad-blue); padding: 5px; font-size: 11px;">Leica 观念摄影新人奖 入围 (2009)</span>
+                    <span style="border: 1px solid var(--cad-blue); padding: 5px; font-size: 11px;">国家艺术基金·当代工业景观数字化档案计划核心艺术家 (2021)</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="end">
+        <div style="max-width: 600px; margin: 0 auto; text-align: left; font-family: monospace;">
+            <h2 style="border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px;">SYSTEM SHUTDOWN SEQUENCE</h2>
+            
+            <p style="margin-bottom: 10px;">
+                > 检查内存完整性... <span style="color: #00FF00;">OK</span><br>
+                > 检查生物学生命体征... <span style="color: red; background: white;">FAILED</span><br>
+                > 归档状态... <span class="blue">LOCKED</span>
+            </p>
+            
+            <br>
+            <p style="font-size: 11px; color: #999;">
+                本网站由“周秩遗产信托基金 (Zhou Zhi Estate Trust)”及“系统摄影研究会”联合运行。<br>
+                部分技术数据受法律保护。
+            </p>
+            <br>
+            <p style="border: 1px solid #333; padding: 10px; display: inline-block;">
+                诊断结论：心力衰竭 <span style="background: white; color: black; cursor: help;">[已编辑]</span>
+            </p>
+        </div>
+    </footer>
+
+</div>
+
+<script>
+    // 简单的系统时钟脚本
+    function updateSystemTime() {
+        const now = new Date();
+        const timeStr = now.toISOString().split('T')[1].replace('Z', '');
+        document.getElementById('sys-clock').innerText = timeStr;
+        requestAnimationFrame(updateSystemTime);
+    }
+    updateSystemTime();
+
+    // 模拟微小的系统故障效果（偶尔闪烁）
+    setInterval(() => {
+        const body = document.body;
+        if(Math.random() > 0.98) {
+            body.style.opacity = 0.9;
+            setTimeout(() => body.style.opacity = 1, 50);
+        }
+    }, 2000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="本站是系统视觉研究者周秩（1978–2022）的官方数字存根。周生前致力于将工程测量学引入影像生产，旨在剥离摄影的抒情传统。作为其最后一份'系统交付物'，本档案收录了关于生命政治、工业模数与空间规训的实践。他的离世标志着'无情感采样'实验的最终闭环——创作主体已正式注销，唯余系统在场。">
+    <meta name="keywords" content="周秩, ZZ Archive, 系统视觉, 工程测量, 影像生产, 生命政治, 工业模数, 空间规训">
+    <meta name="author" content="周秩遗产信托基金 (Zhou Zhi Estate Trust)">
+    <title>ZZ Archive: The Zhou Zhi Estate</title>
+    <style>
+        :root {
+            /* 核心色板 */
+            --cad-blue: #4A90E2;
+            /* 调整为适合深色背景的蓝色 */
+            --paper-gray: #2B2B2B;
+            /* 深色背景 */
+            --ink-black: #E0E0E0;
+            /* 浅色文字 */
+            --grid-line: #3D3D3D;
+            /* 深色网格线 */
+            --card-bg: #363636;
+            /* 卡片背景 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: crosshair;
+            /* 鼠标变为十字准星，模拟CAD操作 */
+        }
+
+        body {
+            background-color: var(--paper-gray);
+            color: var(--ink-black);
+            font-family: 'Courier New', Courier, monospace;
+            /* 强制等宽字体 */
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* --- Loading 遮罩层 --- */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--paper-gray);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-quote {
+            font-size: 16px;
+            max-width: 600px;
+            text-align: center;
+            padding: 20px;
+            border: 1px solid var(--cad-blue);
+            background: var(--card-bg);
+            color: var(--ink-black);
+        }
+
+        .loading-quote-label {
+            color: var(--cad-blue);
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .loading-timer {
+            margin-top: 30px;
+            color: var(--cad-blue);
+            font-size: 12px;
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: #E0E0E0;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: var(--cad-blue);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* --- 辅助类 --- */
+        .blue {
+            color: var(--cad-blue);
+        }
+
+        .bg-blue {
+            background-color: var(--cad-blue);
+            color: white;
+        }
+
+        .border-b {
+            border-bottom: 1px solid var(--cad-blue);
+        }
+
+        .border-r {
+            border-right: 1px solid var(--cad-blue);
+        }
+
+        .border-all {
+            border: 1px solid var(--cad-blue);
+        }
+
+        .mono-bold {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        /* --- 布局网格系统 --- */
+        .wrapper {
+            max-width: 1440px;
+            margin: 0 auto;
+            border-left: 1px solid var(--cad-blue);
+            border-right: 1px solid var(--cad-blue);
+            min-height: 100vh;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 50px 50px;
+            /* 50px标准网格 */
+            background-color: var(--paper-gray);
+        }
+
+        /* --- 顶部仪表盘 --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--paper-gray);
+            border-bottom: 2px solid var(--cad-blue);
+            display: grid;
+            grid-template-columns: 250px 1fr 200px;
+        }
+
+        .header-cell {
+            padding: 15px;
+            border-right: 1px solid var(--cad-blue);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .status-box {
+            border: 1px solid var(--ink-black);
+            padding: 2px 5px;
+            font-size: 10px;
+            display: inline-block;
+            margin-top: 5px;
+            background: var(--card-bg);
+        }
+
+        /* --- 进度条 (永远卡在99.9%) --- */
+        .loading-bar-container {
+            width: 100%;
+            height: 6px;
+            border-bottom: 1px solid var(--cad-blue);
+            background: var(--paper-gray);
+        }
+
+        .loading-bar {
+            width: 99.9%;
+            height: 100%;
+            background: repeating-linear-gradient(45deg,
+                    var(--cad-blue),
+                    var(--cad-blue) 10px,
+                    var(--paper-gray) 10px,
+                    var(--paper-gray) 20px);
+        }
+
+        /* --- 平滑滚动 --- */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* --- 导航索引 --- */
+        nav {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            border-bottom: 1px solid var(--cad-blue);
+            background: var(--paper-gray);
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--ink-black);
+            padding: 15px;
+            border-right: 1px solid var(--cad-blue);
+            font-size: 12px;
+            transition: all 0s;
+            display: block;
+        }
+
+        nav a:hover {
+            background: var(--cad-blue);
+            color: white;
+        }
+
+        /* --- 内容区块通用样式 --- */
+        section {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            border-bottom: 1px solid var(--cad-blue);
+        }
+
+        .sidebar {
+            padding: 20px;
+            border-right: 1px solid var(--cad-blue);
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .section-header {
+            grid-column: 1 / -1;
+            background: var(--cad-blue);
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- 表格样式 --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        td,
+        th {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #CCC;
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--cad-blue);
+            width: 140px;
+        }
+
+        /* --- 作品展示 (CAD图框风格) --- */
+        .work-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .work-grid-4cols {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .cad-frame {
+            border: 1px solid var(--cad-blue);
+            background: var(--card-bg);
+            position: relative;
+            padding: 10px;
+            padding-bottom: 40px;
+            /* 留出底部数据栏空间 */
+        }
+
+        /* 模拟图片占位符 - 轴测图风格 */
+        .placeholder-img {
+            width: 100%;
+            height: 250px;
+            background-color: #EFEFEF;
+            border: 1px dashed var(--cad-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 装饰性线条 */
+        .crosshair {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: var(--cad-blue);
+            top: 50%;
+        }
+
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            height: 250px;
+            width: 1px;
+            background: var(--cad-blue);
+            left: 50%;
+            top: -125px;
+        }
+
+        .meta-tag {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--paper-gray);
+            color: white;
+            padding: 5px 10px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- 语录框 --- */
+        .quote-block {
+            border: 1px solid var(--ink-black);
+            padding: 15px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .quote-block::before {
+            content: "QUOTE // DATA";
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: var(--paper-gray);
+            padding: 0 5px;
+            color: var(--cad-blue);
+            font-size: 10px;
+        }
+
+        /* --- 报告单样式 --- */
+        .report-sheet {
+            border: 2px solid var(--ink-black);
+            padding: 20px;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            box-shadow: 5px 5px 0px rgba(0, 0, 255, 0.1);
+        }
+
+        footer {
+            padding: 50px;
+            text-align: center;
+            border-top: 1px solid var(--cad-blue);
+            background: #000;
+            color: #fff;
+        }
+
+        /* --- 响应式 --- */
+        @media (max-width: 768px) {
+
+            section,
+            header {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--cad-blue);
+            }
+
+            .header-cell:nth-child(2) {
+                display: none;
+            }
+        }
+
+        .text-xs {
+            font-size: 10px;
+        }
+
+        .text-sm {
+            font-size: 11px;
+        }
+
+        .text-2xs {
+            font-size: 9px;
+        }
+
+        .text-base {
+            font-size: 13px;
+        }
+
+        .text-lg {
+            font-size: 16px;
+        }
+
+        .text-xl {
+            font-size: 18px;
+        }
+
+        .text-2xl {
+            font-size: 24px;
+        }
+
+        .mt-0 {
+            margin-top: 0;
+        }
+
+        .mt-1 {
+            margin-top: 5px;
+        }
+
+        .mt-2 {
+            margin-top: 10px;
+        }
+
+        .mt-3 {
+            margin-top: 20px;
+        }
+
+        .mt-4 {
+            margin-top: 30px;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
+
+        .mb-1 {
+            margin-bottom: 5px;
+        }
+
+        .mb-2 {
+            margin-bottom: 10px;
+        }
+
+        .mb-3 {
+            margin-bottom: 20px;
+        }
+
+        .mb-4 {
+            margin-bottom: 30px;
+        }
+
+        .p-1 {
+            padding: 5px;
+        }
+
+        .p-2 {
+            padding: 10px;
+        }
+
+        .p-3 {
+            padding: 15px;
+        }
+
+        .p-4 {
+            padding: 20px;
+        }
+
+        .pb-1 {
+            padding-bottom: 5px;
+        }
+
+        .pb-2 {
+            padding-bottom: 10px;
+        }
+
+        .border-t {
+            border-top: 1px solid var(--cad-blue);
+        }
+
+        .border-t-black {
+            border-top: 1px solid black;
+        }
+
+        .border-b-2 {
+            border-bottom: 2px solid black;
+        }
+
+        .border-dark {
+            border: 1px solid #333;
+        }
+
+        .border-black {
+            border: 1px solid black;
+        }
+
+        .border-none {
+            border: none;
+        }
+
+        .no-border-right {
+            border-right: none;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-white {
+            color: white;
+        }
+
+        .text-gray {
+            color: #666;
+        }
+
+        .text-light-gray {
+            color: #999;
+        }
+
+        .text-ccc {
+            color: #CCC;
+        }
+
+        .bg-white {
+            background-color: var(--card-bg);
+        }
+
+        .bg-black {
+            background-color: black;
+        }
+
+        .bg-light-blue {
+            background-color: #f0f0ff;
+        }
+
+        .bg-light-gray {
+            background-color: var(--paper-gray);
+        }
+
+        .bg-dark {
+            background: black;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+
+        .gap-1 {
+            gap: 5px;
+        }
+
+        .gap-2 {
+            gap: 10px;
+        }
+
+        .gap-3 {
+            gap: 20px;
+        }
+
+        .grid-cols-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .h-full {
+            height: 100%;
+        }
+
+        .h-200 {
+            height: 200px;
+        }
+
+        .w-100 {
+            width: 100px;
+        }
+
+        .h-100 {
+            height: 100px;
+        }
+
+        .object-cover {
+            object-fit: contain;
+        }
+
+        .letter-spacing-2 {
+            letter-spacing: 2px;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .shadow-sm {
+            box-shadow: 5px 5px 0px rgba(0, 0, 255, 0.1);
+        }
+
+        .tag-badge {
+            display: inline-block;
+            border: 1px solid var(--cad-blue);
+            padding: 5px;
+            font-size: 11px;
+        }
+
+        .sys-text-ok {
+            color: #00FF00;
+        }
+
+        .sys-text-fail {
+            color: red;
+            background: transparent;
+        }
+
+        .sys-text-dim {
+            color: #999;
+        }
+
+        .report-grid {
+            display: grid;
+            /* 一行两个 */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .report-body {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 10px;
+        }
+
+        .artwork-desc {
+            margin-top: 10px;
+            font-size: 11px;
+        }
+
+        .section-intro-title {
+            padding-bottom: 10px;
+        }
+
+        .section-intro-text {
+            font-size: 11px;
+            margin-top: 10px;
+        }
+
+        .info-box {
+            border: 1px solid var(--cad-blue);
+            padding: 15px;
+            background: #434343;
+        }
+
+        .shutdown-line {
+            margin-bottom: 10px;
+        }
+        .text-red{
+            color: rgb(249, 71, 71);
+        }
+
+        .shutdown-box {
+            border: 1px solid #333;
+            padding: 10px;
+            display: inline-block;
+        }
+
+        .badge-dark {
+            background: black;
+            color: white;
+        }
+
+        .cad-frame-gray {
+            border: 1px solid #999;
+        }
+
+        .meta-tag-gray {
+            background: var(--paper-gray);
+        }
+
+        .placeholder-dark {
+            background: #000;
+            color: #333;
+        }
+
+        .dust-line {
+            width: 100%;
+            height: 1px;
+            background: #EEE;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .dust-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .event-list {
+            list-style: none;
+            font-size: 11px;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .event-badge {
+            border: 1px solid black;
+            padding: 0 2px;
+        }
+
+        .related-links {
+            font-size: 10px;
+            color: #e3e1e1;
+            margin-bottom: 10px;
+        }
+
+        .awards-section {
+            margin-top: 30px;
+        }
+
+        .awards-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .shutdown-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: left;
+            font-family: monospace;
+        }
+
+        .shutdown-title {
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .shutdown-message {
+            margin-bottom: 10px;
+        }
+
+        .sys-ok {
+            color: #00FF00;
+        }
+
+        .sys-fail {
+            color: red;
+            background: transparent;
+        }
+
+        .sys-note {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .diagnosis-box {
+            border: 1px solid #333;
+            padding: 10px;
+            display: inline-block;
+        }
+
+        .diagnosis-edited {
+            background: var(--card-bg);
+            color: var(--ink-black);
+            cursor: help;
+        }
+
+        /* --- 图片放大预览 --- */
+        .image-preview {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview.active {
+            display: flex;
+        }
+
+        .preview-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        .preview-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .preview-title {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            color: white;
+            font-size: 14px;
+        }
+
+        .clickable-image {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .clickable-image:hover {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-quote">
+            <span class="loading-quote-label" id="loadingLabel"></span>
+            <span id="loadingText"></span>
+        </div>
+        <div class="loading-timer">
+            SYSTEM INITIALIZING... <span id="loadingPercent">0%</span>
+        </div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar" id="loadingProgressBar"></div>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <!-- SYSTEM HEADER -->
+        <header>
+            <div class="header-cell">
+                <h1 class="text-xl mb-1">ZZ_ARCHIVE</h1>
+                <span class="blue text-xs">THE ZHOU ZHI ESTATE</span>
+            </div>
+            <div class="header-cell flex items-center justify-center text-center">
+                <div class="text-2xl letter-spacing-2 font-bold">周 秩</div>
+                <div class="text-sm">1978 — 2022 [SHANGHAI]</div>
+                <div class="status-box">STATUS: DEREGISTERED / 注销</div>
+            </div>
+            <div class="header-cell text-right no-border-right">
+                <div id="sys-clock" class="text-red">00:00:00.000</div>
+                <div class="text-red text-xs mt-1">SYS: STANDBY</div>
+                <div class="text-xs">VISUAL SYSTEM LAB</div>
+            </div>
+        </header>
+
+        <!-- LOADING STRIP -->
+        <div class="loading-bar-container">
+            <div class="loading-bar"></div>
+        </div>
+ 
+     
+
+        <!-- NAVIGATION -->
+        <nav>
+            <a href="#profile">01_档案 (PROFILE)</a>
+            <a href="#works">02_摄影作品 (WORKS)</a>
+            <a href="#visual">03_视觉 (VISUAL)</a>
+            <a href="#history">04_履历 (LOGS)</a>
+            <a href="#pubs">05_出版 (PUBS)</a>
+            <a href="#end">06_终点 (END)</a>
+        </nav>
+
+        <!-- SECTION 1: PROFILE -->
+        <section >
+            <div class="section-header" id="profile">
+                <span>01 // 艺术家基本信息</span>
+                <span>ID: ZZ-1978-SH</span>
+            </div>
+            <div class="sidebar">
+                <img src="images/profile-img.png" alt="周秩" class="w-full h-200 object-cover border-black">
+                <div class="quote-block">
+                    <p>"在这个时代，灵感"是效率的敌人。我从不创作，我只执行。"</p>
+                </div>
+                <div class="quote-block">
+                    <p>"艺术家是生产链条上的一个生物学错误。"</p>
+                </div>
+            </div>
+            <div class="main-content">
+                <h2 class="blue uppercase mb-3">Identity Data / 身份数据</h2>
+                <table>
+                    <tr>
+                        <th>姓名</th>
+                        <td>周秩 (Zhou Zhi)</td>
+                    </tr>
+                    <tr>
+                        <th>生卒</th>
+                        <td>1978 (上海) — 2022 (上海, 疫情期间)</td>
+                    </tr>
+                    <tr>
+                        <th>死因</th>
+                        <td>慢性心力衰竭与呼吸系统并发症</td>
+                    </tr>
+                    <tr>
+                        <th>职业</th>
+                        <td>摄影师、视觉系统研究者、前高级结构工程师</td>
+                    </tr>
+                    <tr>
+                        <th>教育背景</th>
+                        <td>
+                            1996-2000 同济大学 建筑工程系<br>
+                            2005-2007 德国包豪斯大学 (访问研究：工业视觉与感知自动化)
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="info-box">
+                    <strong class="blue">关于调研：</strong><br>
+                    “工地是当代生命政治的缩影。在那里，没有个体，只有被网格化的劳动力。”
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: WORKS -->
+        <section >
+            <div class="section-header" id="works">
+                <span>02 // 摄影作品 (WORKS)</span>
+                <span>DISPLAY: GRID_VIEW</span>
+            </div>
+
+            <!-- SERIES 1 -->
+            <div class="sidebar">
+                <h3 class="text-red border-b section-intro-title">I. 轴测规训 (2015-2018)</h3>
+                <p class="section-intro-text">
+                    Axonometric Discipline<br><br>
+                    <strong>技术描述：</strong><br> 采用极高像素的数字背板拍摄建筑工地局部。图像取消了所有的透视消失点，呈现出一种绝对理性的平行结构。<br><br>
+                    <strong>学术话术：</strong><br>“通过对透视法的暴力纠正，周秩剥离了观众作为‘主体’的优越感，将建筑景观还原为一种纯粹的权力矩阵”
+                </p>
+            </div>
+            <div class="main-content">
+                <div class="work-grid">
+                    <!-- Art Item 1 -->
+                    <div class="cad-frame">
+                        <div class="placeholder-img">
+                            <img src="images/1.jpeg" alt="轴测规训1-预排列" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag">
+                            <span>NO. AXON-01</span>
+                            <span>[预排列]</span>
+                        </div>
+                        <div class="artwork-desc">
+                            <strong>描述：</strong>材料与构件被提前组织为标准化单元，以平行逻辑铺展于空间之中。
+                        </div>
+                    </div>
+
+                    <!-- Art Item 2 -->
+                    <div class="cad-frame">
+                        <div class="placeholder-img">
+                            <img src="images/2.jpeg" alt="轴测规训2-静默待命" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag">
+                            <span>NO. AXON-02</span>
+                            <span>[静默待命]</span>
+                        </div>
+                        <div class="artwork-desc">
+                            <strong>描述：</strong>容器、钢筋与模块化组件被纳入同一管理平面。
+                        </div>
+                    </div>
+
+                    <!-- Art Item 3 -->
+                    <div class="cad-frame">
+                        <div class="placeholder-img">
+                            <img src="images/3.png" alt="轴测规训3-操作层" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag">
+                            <span>NO. AXON-03</span>
+                            <span>[操作层]</span>
+                        </div>
+                        <div class="artwork-desc">
+                            <strong>描述：</strong>机械与临时结构以无透视的方式并列出现，形成纯粹的功能分布。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SERIES 2 -->
+            <div class="sidebar border-t">
+                <h3 class="text-red border-b section-intro-title">II. 交付物：0.00mm</h3>
+                <p class="section-intro-text">
+                    Deliverables (2019-2021)<br><br>
+                    <strong>描述：</strong><br>拍摄工地遗留下来的废弃铁丝、干涸的混凝土碎块和打桩痕迹。每张照片都附带一份精密的《材料检测报告》。<br><br>
+                    <strong>学术话术：</strong><br>"这是对劳动痕迹的法医式取证。周秩用镜头记录了那些'无名劳动'在被系统吞噬前的最后残余。"
+                </p>
+            </div>
+            <div class="main-content border-t bg-light-gray">
+                <div class="report-grid">
+                    <!-- Report 1 -->
+                    <div class="report-sheet">
+                        <div class="report-header">
+                            <strong class="text-lg">材料检测报告 / MATERIAL REPORT</strong>
+                            <span class="blue">ID: ZZ-MR-19-01</span>
+                        </div>
+                        <div class="report-body">
+                            <img src="images/4.png" alt="样本图片" class="w-100 h-100 object-cover border-dark">
+                            <div>
+                                <p><strong>样本名称：</strong>退役钢制捆扎线残段</p>
+                                <p><strong>采集地点：</strong>施工场地外围弃置区</p>
+                                <p><strong>采集时间：</strong>2019.06.14</p>
+                                <p class="blue"><strong>状态：</strong>氧化 / 废弃</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report 2 -->
+                    <div class="report-sheet">
+                        <div class="report-header">
+                            <strong class="text-lg">材料检测报告 / MATERIAL REPORT</strong>
+                            <span class="blue">ID: ZZ-MR-19-02</span>
+                        </div>
+                        <div class="report-body">
+                            <img src="images/5.png" alt="样本图片" class="w-100 h-100 object-cover border-dark">
+                            <div>
+                                <p><strong>样本名称：</strong>干涸混凝土碎块</p>
+                                <p><strong>采集地点：</strong>模板拆除区边缘</p>
+                                <p><strong>采集时间：</strong>2019.11.03</p>
+                                <p class="blue"><strong>状态：</strong>散落 / 无编号标识</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report 3 -->
+                    <div class="report-sheet">
+                        <div class="report-header">
+                            <strong class="text-lg">材料检测报告 / MATERIAL REPORT</strong>
+                            <span class="blue">ID: ZZ-MR-20-01</span>
+                        </div>
+                        <div class="report-body">
+                            <img src="images/6.png" alt="样本图片" class="w-100 h-100 object-cover border-dark">
+                            <div>
+                                <p><strong>样本名称：</strong>打桩遗留环状压痕</p>
+                                <p><strong>采集地点：</strong>基坑边界</p>
+                                <p><strong>采集时间：</strong>2020.02.27</p>
+                                <p class="blue"><strong>状态：</strong>地表残留</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report 4 -->
+                    <div class="report-sheet">
+                        <div class="report-header">
+                            <strong class="text-lg">材料检测报告 / MATERIAL REPORT</strong>
+                            <span class="blue">ID: ZZ-MR-20-02</span>
+                        </div>
+                        <div class="report-body">
+                            <img src="images/7.png" alt="样本图片" class="w-100 h-100 object-cover border-dark">
+                            <div>
+                                <p><strong>样本名称：</strong>施工手套（弃置），散落紧固件（金属）</p>
+                                <p><strong>采集地点：</strong>物料暂存区</p>
+                                <p><strong>采集时间：</strong>2020.09.18</p>
+                                <p class="blue"><strong>状态：</strong>干燥 / 失配</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report 5 -->
+                    <div class="report-sheet">
+                        <div class="report-header">
+                            <strong class="text-lg">材料检测报告 / MATERIAL REPORT</strong>
+                            <span class="blue">ID: ZZ-MR-21-01</span>
+                        </div>
+                        <div class="report-body">
+                            <img src="images/8.png" alt="样本图片" class="w-100 h-100 object-cover border-dark">
+                            <div>
+                                <p><strong>样本名称：</strong>建筑废料（收集）</p>
+                                <p><strong>采集地点：</strong>施工运输路径</p>
+                                <p><strong>采集时间：</strong>2021.04.06</p>
+                                <p class="blue"><strong>状态：</strong>未分类</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report 6 -->
+                    <div class="report-sheet">
+                        <div class="report-header">
+                            <strong class="text-lg">材料检测报告 / MATERIAL REPORT</strong>
+                            <span class="blue">ID: ZZ-MR-21-02</span>
+                        </div>
+                        <div class="report-body">
+                            <img src="images/9.png" alt="样本图片" class="w-100 h-100 object-cover border-dark">
+                            <div>
+                                <p><strong>样本名称：</strong>防护端帽（钢筋用）</p>
+                                <p><strong>采集地点：</strong>施工废弃区</p>
+                                <p><strong>采集时间：</strong>2021.12.11</p>
+                                <p class="blue"><strong>状态：</strong>成组堆叠</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SERIES 3 -->
+            <div class="sidebar border-t">
+                <h3 class="text-red border-b section-intro-title">III. 静默期采样</h3>
+                <p class="section-intro-text">
+                    Silent Sampling (2022)<br>
+                    <span class="badge-dark">[ 未完成 / 遗作 ]</span><br><br>
+                    <strong>描述：</strong><br>这是他生前的最后一组未完成作品。拍摄于2022年他在上海隔离期间。画面中只有被分割的窗户阴影和极其精细的空气浮尘。<br><br>
+                    <strong>学术话术：</strong><br>"当外部生产线停摆，周秩将他的'测量仪'转向了生命本身。这组作品预示了他个体的系统性崩溃。"
+                </p>
+            </div>
+            <div class="main-content border-t">
+                <div class="work-grid-4cols">
+                    <div class="cad-frame cad-frame-gray">
+                        <div class="placeholder-img">
+                            <img src="images/10.png" alt="静默期采样1" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag meta-tag-gray">
+                            <span>SS-01</span>
+                        </div>
+                    </div>
+                    <div class="cad-frame cad-frame-gray">
+                        <div class="placeholder-img">
+                            <img src="images/11.png" alt="静默期采样2" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag meta-tag-gray">
+                            <span>SS-02</span>
+                        </div>
+                    </div>
+                    <div class="cad-frame cad-frame-gray">
+                        <div class="placeholder-img">
+                            <img src="images/12.png" alt="静默期采样3" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag meta-tag-gray">
+                            <span>SS-03</span>
+                        </div>
+                    </div>
+                    <div class="cad-frame cad-frame-gray">
+                        <div class="placeholder-img">
+                            <img src="images/13.png" alt="静默期采样4" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag meta-tag-gray">
+                            <span>SS-04</span>
+                        </div>
+                    </div>
+                    <div class="cad-frame cad-frame-gray">
+                        <div class="placeholder-img">
+                            <img src="images/14.png" alt="静默期采样5" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag meta-tag-gray">
+                            <span>SS-05</span>
+                        </div>
+                    </div>
+                    <div class="cad-frame cad-frame-gray">
+                        <div class="placeholder-img">
+                            <img src="images/15.png" alt="静默期采样6" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag meta-tag-gray">
+                            <span>SS-06</span>
+                        </div>
+                    </div>
+                    <div class="cad-frame cad-frame-gray">
+                        <div class="placeholder-img">
+                            <img src="images/16.png" alt="静默期采样7" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag meta-tag-gray">
+                            <span>SS-07</span>
+                        </div>
+                    </div>
+                    <div class="cad-frame cad-frame-gray">
+                        <div class="placeholder-img">
+                            <img src="images/17.png" alt="静默期采样8" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag meta-tag-gray">
+                            <span>SS-08</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: VISUAL DATA -->
+        <section id="visual">
+            <div class="section-header">
+                <span>03 // 视觉图像 (VISUAL DATA)</span>
+                <span>TYPE: STRUCTURED</span>
+            </div>
+            <div class="sidebar">
+                <h4 class="text-red">数据分类</h4>
+                <p class="section-intro-text">
+                    以下图像展示了周秩的创作系统与个人痕迹。<br><br>
+                    所有数据均经过系统校准与分析。
+                </p>
+            </div>
+            <div class="main-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- 1. 周秩个人图像 -->
+                <div>
+                    <h5 class="text-red">1. 周秩个人图像</h5>
+                    <div class="cad-frame" style="margin-top: 10px;">
+                        <div class="placeholder-img clickable-image" onclick="openPreview('images/18.png', '1. 周秩个人图像')">
+                            <img src="images/18.png" alt="周秩个人图像" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag">
+                            <span>DATA-001</span>
+                            <span>个人图像</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 校对过的蓝图 -->
+                <div>
+                    <h5 class="text-red">2. 校对过的蓝图</h5>
+                    <div class="cad-frame" style="margin-top: 10px;">
+                        <div class="placeholder-img clickable-image" onclick="openPreview('images/19.png', '2. 校对过的蓝图')">
+                            <img src="images/19.png" alt="校对过的蓝图" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag">
+                            <span>DATA-002</span>
+                            <span>蓝图校对</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 生产过程的中间数据 -->
+                <div>
+                    <h5 class="text-red">3. 生产过程的中间数据</h5>
+                    <div class="cad-frame" style="margin-top: 10px;">
+                        <div class="placeholder-img clickable-image" onclick="openPreview('images/20.png', '3. 生产过程的中间数据')">
+                            <img src="images/20.png" alt="生产过程的中间数据" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag">
+                            <span>DATA-003</span>
+                            <span>生产日志</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 数字残余 -->
+                <div>
+                    <h5 class="text-red">4. 数字残余</h5>
+                    <div class="cad-frame" style="margin-top: 10px;">
+                        <div class="placeholder-img clickable-image" onclick="openPreview('images/21.png', '4. 数字残余')">
+                            <img src="images/21.png" alt="数字残余" class="w-full h-full object-cover">
+                        </div>
+                        <div class="meta-tag">
+                            <span>DATA-004</span>
+                            <span>数字分析</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. 关于"死亡"的终点 -->
+                <div style="grid-column: 1 / -1;">
+                    <h5 class="text-red">5. 关于"死亡"的终点</h5>
+                    <div class="cad-frame" style="margin-top: 10px;">
+                        <div class="placeholder-img clickable-image" style="height: 320px;" onclick="openPreview('images/22.png', '5. 关于死亡的终点')">
+                            <img src="images/22.png" alt="关于死亡的终点" class="w-full h-full object-cover" >
+                        </div>
+                        <div class="meta-tag">
+                            <span>DATA-005</span>
+                            <span>终点数据</span>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: LOGS -->
+        <section id="history">
+            <div class="section-header">
+                <span>04 // 历史记录 (SYSTEM LOGS)</span>
+                <span>TYPE: CHRONOLOGICAL</span>
+            </div>
+            <div class="sidebar">
+                <h4 class="text-red">个人个展 (SOLO)</h4>
+                <ul class="event-list">
+                    <li><strong>2023</strong> | <span class="event-badge">遗作展</span> 《周秩：系统不在场》(Zhou Zhi: System
+                        Absence), 龙美术馆, 上海</li>
+                    <li><strong>2021</strong> | 《闭环实验：注销前的最后采样》(Closed Loop), 线上虚拟美术馆项目(Project V-Void)</li>
+                    <li><strong>2019</strong> | 《系统交付：2010-2019回顾展》(Final Deliverables), 上海当代艺术博物馆(PSA), 上海</li>
+                    <li><strong>2018</strong> | 《标准化身体》(The Standardized Body), 录像局(Video Bureau), 广州</li>
+                    <li><strong>2016</strong> | 《非地方的精密扫描》(Scanning Non-places), Whitechapel Gallery, 伦敦</li>
+                    <li><strong>2014</strong> | 《轴测规训：从工地到影像》(Axonometric Discipline), 东京都摄影美术馆(TOP Museum), 东京</li>
+                    <li><strong>2011</strong> | 《应力补偿》(Stress Compensation), M50创意园区, 上海</li>
+                    <li><strong>2008</strong> | 《Weimar Samples: 0.1%误差》(Weimar Samples: 0.1% Margin of Error),
+                        Bauhaus-Archiv, 柏林</li>
+                    <li><strong>2004</strong> | 《静载：关于水泥的本体论》(Static Load: Ontology of Cement), 泰康空间, 北京</li>
+                </ul>
+            </div>
+            <div class="main-content">
+                <h4 class="text-red">群展记录 (GROUP SAMPLES)</h4>
+                <p class="related-links">[关联节点：谢德庆, Hito Steyerl...]</p>
+                <table>
+                    <tr>
+                        <th>2022</th>
+                        <td>《全球景观：最后的打卡》, 威尼斯双年展主题馆, 意大利</td>
+                    </tr>
+                    <tr>
+                        <th>2020</th>
+                        <td>《隔离空间的度量学》, 柏林双年展, 德国</td>
+                    </tr>
+                    <tr>
+                        <th>2017</th>
+                        <td>《废墟上的算法：超现代性人类学》, 尤伦斯当代艺术中心 (UCCA), 北京</td>
+                    </tr>
+                    <tr>
+                        <th>2015</th>
+                        <td>《后人类：数字异化与生产力》, 纽约现代艺术博物馆 (MoMA), 纽约</td>
+                    </tr>
+                    <tr>
+                        <th>2013</th>
+                        <td>《第十届连州国际摄影年展：采样现实》, 连州, 中国</td>
+                    </tr>
+                    <tr>
+                        <th>2012</th>
+                        <td>《生命政治：规训下的像素》, 蓬皮杜艺术中心, 巴黎</td>
+                    </tr>
+                    <tr>
+                        <th>2009</th>
+                        <td>《可见的隐形劳动》, 泰特现代美术馆 (Tate Modern), 伦敦</td>
+                    </tr>
+                    <tr>
+                        <th>2007</th>
+                        <td>《跨界：建筑与影像的逻辑》, 威尼斯建筑双年展中国馆, 意大利</td>
+                    </tr>
+                    <tr>
+                        <th>2005</th>
+                        <td>《新客观主义的余响》, 杜塞尔多夫艺术学院, 德国</td>
+                    </tr>
+                </table>
+
+                <div class="awards-section">
+                    <h4 class="text-red">所获荣誉 (AWARDS)</h4>
+                    <div class="awards-list">
+                        <span class="tag-badge">Weimar 工业影像奖 (2006)</span>
+                        <span class="tag-badge">哈苏基金会：数字本体论年度资助 (2015)</span>
+                        <span class="tag-badge">上海国际摄影年展 年度最佳技术成就奖 (2018)</span>
+                        <span class="tag-badge">全球工业美学卓越奖 GAEA (2020)</span>
+                        <span class="tag-badge">平遥国际摄影大展 优秀工业题材摄影奖 (2012)</span>
+                        <span class="tag-badge">Leica 观念摄影新人奖 入围 (2009)</span>
+                        <span class="tag-badge">国家艺术基金·当代工业景观数字化档案计划核心艺术家 (2021)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: PUBLICATIONS -->
+        <section id="pubs">
+            <div class="section-header">
+                <span>05 // 出版与文献 (PUBLICATIONS)</span>
+                <span>TYPE: ARCHIVAL</span>
+            </div>
+            <div class="sidebar">
+                <h4 class="text-red">出版记录</h4>
+                <p class="section-intro-text">
+                    周秩的著作与文献档案。<br><br>
+                    所有出版物均遵循系统化的学术标准。
+                </p>
+            </div>
+            <div class="main-content">
+                <div class="publication-list">
+                    <div class="publication-item">
+                        <h5 class="text-red">《周秩：轴测法的权力》(Zhou Zhi: Power of Axonometry)</h5>
+                        <p class="text-sm">斯泰德出版社 (Steidl), 2015</p>
+                    </div>
+                    <div class="publication-item">
+                        <h5 class="text-red">《工程作为方法：周秩的测量记录》(Engineering as Method)</h5>
+                        <p class="text-sm">上海人民美术出版社, 2018</p>
+                    </div>
+                    <div class="publication-item">
+                        <h5 class="text-red">《注销：一个艺术家的数字化终点》(Deregistered)</h5>
+                        <p class="text-sm">纪念版画册, 2023</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer id="end">
+            <div class="shutdown-container">
+                <h2 class="shutdown-title">SYSTEM SHUTDOWN SEQUENCE</h2>
+
+                <p class="shutdown-message">
+                    > 检查内存完整性... <span class="sys-ok">OK</span><br>
+                    > 检查生物学生命体征... <span class="sys-fail">FAILED</span><br>
+                    > 归档状态... <span class="blue">LOCKED</span>
+                </p>
+
+                <br>
+                <p class="sys-note">
+                    本网站由"周秩遗产信托基金 (Zhou Zhi Estate Trust)"及"系统摄影研究会"联合运行。<br>
+                    部分技术数据受法律保护。
+                </p>
+                <br>
+                <p class="diagnosis-box">
+                    诊断结论：心力衰竭 <span class="diagnosis-edited">[已编辑]</span>
+                </p>
+            </div>
+        </footer>
+
+    <!-- 图片预览模态框 -->
+    <div class="image-preview" id="imagePreview">
+        <div class="preview-content">
+            <span class="preview-close" onclick="closePreview()">&times;</span>
+            <span class="preview-title" id="previewTitle"></span>
+            <img class="preview-img" id="previewImg" src="" alt="">
+        </div>
+    </div>
+
+    <script>
+        // 图片预览功能
+        function openPreview(imgSrc, title) {
+            document.getElementById('previewImg').src = imgSrc;
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('imagePreview').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePreview() {
+            document.getElementById('imagePreview').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // 点击模态框背景关闭
+        document.getElementById('imagePreview').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePreview();
+            }
+        });
+
+        // 键盘ESC键关闭
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePreview();
+            }
+        });
+
+        // Loading 页面逻辑 - 固定语录
+        document.getElementById('loadingLabel').textContent = "ON CREATION:";
+        document.getElementById('loadingText').textContent = '"In this era, \'inspiration\' is the enemy of efficiency. I never create; I only execute."\n                                ——Zhou Zhi';
+
+        // 5秒加载动画
+        let progress = 0;
+        const loadingDuration = 1000; // 5秒
+        const progressBar = document.getElementById('loadingProgressBar');
+        const percentText = document.getElementById('loadingPercent');
+        const overlay = document.getElementById('loadingOverlay');
+
+        const interval = setInterval(() => {
+            progress += 2;
+            progressBar.style.width = progress + '%';
+            percentText.textContent = progress + '%';
+
+            if (progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
+            }
+        }, loadingDuration / 50);
+
+        // 简单的系统时钟脚本
+        function updateSystemTime() {
+            const now = new Date();
+            const timeStr = now.toISOString().split('T')[1].replace('Z', '');
+            document.getElementById('sys-clock').innerText = timeStr;
+            requestAnimationFrame(updateSystemTime);
+        }
+        updateSystemTime();
+
+        // 模拟微小的系统故障效果（偶尔闪烁）
+        setInterval(() => {
+            const body = document.body;
+            if (Math.random() > 0.98) {
+                body.style.opacity = 0.9;
+                setTimeout(() => body.style.opacity = 1, 50);
+            }
+        }, 2000);
+    </script>
+
+</body>
+
+</html>
