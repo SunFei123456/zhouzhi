@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ZZ Archive: The Zhou Zhi Estate - Memorial website for visual-systems researcher Zhou Zhi (1978-2022)">
+    <title>ZZ Archive - Language Selection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #2B2B2B;
+            color: #E0E0E0;
+            font-family: 'Courier New', Courier, monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #4A90E2;
+            margin-bottom: 10px;
+            letter-spacing: 4px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 60px;
+        }
+
+        .lang-options {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .lang-option {
+            border: 2px solid #4A90E2;
+            padding: 30px 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #E0E0E0;
+            display: block;
+        }
+
+        .lang-option:hover {
+            background: #4A90E2;
+            transform: translateY(-5px);
+        }
+
+        .lang-code {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .lang-name {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .lang-option:hover .lang-name {
+            color: white;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 30px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 32px;
+            }
+            .lang-options {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ZZ_ARCHIVE</h1>
+        <p class="subtitle">THE ZHOU ZHI ESTATE | 周秩档案</p>
+        
+        <div class="lang-options">
+            <a href="./cn/index.html" class="lang-option">
+                <div class="lang-code">CN</div>
+                <div class="lang-name">中文</div>
+            </a>
+            <a href="./en/index.html" class="lang-option">
+                <div class="lang-code">EN</div>
+                <div class="lang-name">English</div>
+            </a>
+        </div>
+    </div>
+    
+    <div class="footer">
+        1978 — 2022 | SYSTEM ARCHIVED
+    </div>
+</body>
+</html>
